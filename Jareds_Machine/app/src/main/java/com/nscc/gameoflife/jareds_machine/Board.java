@@ -12,6 +12,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
+import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import android.os.Handler;
 
@@ -22,42 +23,39 @@ public class Board extends View {
     // grid line objects
     private ArrayList<Line> verticalLines = new ArrayList<>();
     private ArrayList<Line> horizontalLines = new ArrayList<>();
-    // drawing thread values
-    private Handler h;
-    private final int FRAME_RATE = 30;
+    protected Cell[][] cells;
     // drawing objects
     private Bitmap mBitmap;
     private Canvas mCanvas;
     Context context;
     private Paint mPaint;
+    protected int color;
 
+    int temp = 0; //testing something..
 
     public Board(Context c, AttributeSet attrs) {
         super(c, attrs);
         context = c;
 
-        h = new Handler();
+        cells = new Cell[HORIZONTAL_CELLS][VERTICAL_CELLS];
 
         // setup a default paint
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
-        mPaint.setColor(Color.BLACK);
+        mPaint.setColor(Color.GRAY);
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeJoin(Paint.Join.ROUND);
         mPaint.setStrokeWidth(4f);
     }
 
-    private Runnable r = new Runnable() {
-        @Override
-        public void run() {
-            invalidate();
-        }
-    };
+
 
     // main draw method
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
+        mPaint.setColor(Color.LTGRAY);
 
         // Draw Grid
         for (int i = 0;i< horizontalLines.size();i++)
@@ -69,13 +67,24 @@ public class Board extends View {
             verticalLines.get(i).draw(canvas, mPaint);
         }
 
-        // call this method again in thread "r", after the FRAME_RATE as elasped
-        h.postDelayed(r, FRAME_RATE);
+        mPaint.setColor(color);
+
+        if (cells[1][1] != null) // just a not null check
+        {
+            for (int row = 0;row < cells.length;row++) {
+                for (int col = 0;col < cells.length;col++)
+                {
+                    cells[row][col].draw(canvas, mPaint);
+                }
+            }
+        }
     }
 
-    // create the grid line objects
-    public void setupGrid(int w, int h)
+    public void resetLineAndCellArrays()
     {
+        int w = this.getWidth();
+        int h = this.getHeight();
+
         // clear anything currently there
         verticalLines.clear();
         horizontalLines.clear();
@@ -104,6 +113,16 @@ public class Board extends View {
             horizontalLines.add(new Line(x1, x2, y1, y2));
         }
 
+        // cell objects
+        for (int row = 0;row < cells.length;row++) {
+            for (int col = 0;col < cells.length;col++)
+            {
+                if (row == 0 || row == HORIZONTAL_CELLS-1 || col == 0 || col == VERTICAL_CELLS-1)
+                    cells[row][col] = new Cell(verticalLines.get(row).x1, horizontalLines.get(col).y1, cellWidth, cellHeight, true);
+                else
+                    cells[row][col] = new Cell(verticalLines.get(row).x1, horizontalLines.get(col).y1, cellWidth, cellHeight, false);
+            }
+        }
     }
 
     // override onSizeChanged
@@ -113,10 +132,10 @@ public class Board extends View {
         super.onSizeChanged(w, h, oldw, oldh);
         mBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         mCanvas = new Canvas(mBitmap);
-        setupGrid(w, h);
     }
 
     public void clearCanvas() {
+        resetLineAndCellArrays();
         invalidate();
     }
 
