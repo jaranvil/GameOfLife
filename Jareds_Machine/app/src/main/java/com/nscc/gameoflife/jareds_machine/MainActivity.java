@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText generationInput;
     private TextView generationReport;
 
-    private int colors[] = {Color.RED, Color.GREEN, Color.BLUE};
+    private int colors[] = {Color.RED};
 
     // State data:
     private boolean isRunning;
@@ -53,7 +53,12 @@ public class MainActivity extends AppCompatActivity {
         connectWidgets();
         connectListeners();
 
-        generationInput.setText(Integer.toString(maxGenerations));
+        newSim();
+        generations = 0;
+        generationInput.setText("100");
+        updateReport();
+        //newSim();
+        clearCanvas();
 
     }
 
@@ -106,10 +111,10 @@ public class MainActivity extends AppCompatActivity {
         board.color = colors[rand.nextInt(colors.length)];
 
         // create new cells objetcs
-        board.resetLineAndCellArrays();
-        generations = 0;
+        //board.resetLineAndCellArrays();
+        //generations = 0;
         //set starting cells
-        setStartPositions();
+        //setStartPositions();
         // start runnable thread
         h.postAtTime(r, SystemClock.uptimeMillis() + 400);
 
@@ -119,6 +124,35 @@ public class MainActivity extends AppCompatActivity {
         generationInput.setEnabled(false);
         patternSpinner.setEnabled(false);
         isRunning = true;
+    }
+
+//    private void stopSim() {
+//
+//        // TODO: code to stop the simulation
+//        h.removeCallbacks(r);
+//
+//        // update the ui behavour and local properties.
+//        runPauseButton.setText("Run");
+//        generationInput.setEnabled(true);
+//        patternSpinner.setEnabled(true);
+//        isRunning = false;
+//    }
+//
+//    public void startSim()
+//    {
+//        h.postAtTime(r, SystemClock.uptimeMillis() + 400);
+//        // update the ui behavour and local properties.
+//        runPauseButton.setText("Pause");
+//        generationInput.setEnabled(false);
+//        patternSpinner.setEnabled(false);
+//        isRunning = true;
+//    }
+
+    private void newSim() {
+        // create new cells objetcs
+        board.resetLineAndCellArrays();
+        generations = 0;
+        setStartPositions();
     }
 
     public void setStartPositions()
@@ -179,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
                 generations = 0;
                 generationInput.setText("100");
                 updateReport();
-
+                newSim();
                 clearCanvas();
 
             }

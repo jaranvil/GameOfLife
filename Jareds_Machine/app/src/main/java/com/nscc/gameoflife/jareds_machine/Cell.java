@@ -80,6 +80,7 @@ public class Cell {
     void draw(Canvas c,Paint p)
     {
         if (alive) {
+
             // fill rect
             p.setStyle(Paint.Style.FILL);
             // set alpha value by cells age
@@ -89,7 +90,12 @@ public class Cell {
             p.setAlpha(alpha);
 
             // draw cell
-            c.drawRect(this.x, this.y, x+this.width, y+this.height, p);
+            c.drawRect(this.x, this.y, x + this.width, y + this.height, p);
+
+        } else {
+//            p.setStyle(Paint.Style.FILL);
+//            p.setColor(Color.BLACK);
+//            c.drawRect(this.x, this.y, x+this.width, y+this.height, p);
         }
     }
 }

@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
@@ -18,8 +19,8 @@ import android.os.Handler;
 
 public class Board extends View {
     // size of grid
-    private static final int HORIZONTAL_CELLS = 30;
-    private static final int VERTICAL_CELLS = 30;
+    private static final int HORIZONTAL_CELLS = 40;
+    private static final int VERTICAL_CELLS = 40;
     // grid line objects
     private ArrayList<Line> verticalLines = new ArrayList<>();
     private ArrayList<Line> horizontalLines = new ArrayList<>();
@@ -30,6 +31,8 @@ public class Board extends View {
     Context context;
     private Paint mPaint;
     protected int color;
+
+    protected boolean addingCells = true;
 
     int temp = 0; //testing something..
 
@@ -140,13 +143,39 @@ public class Board extends View {
     }
 
     //override the onTouchEvent
+//    @Override
+//    public boolean onTouchEvent(MotionEvent event) {
+//        float x = event.getX();
+//        float y = event.getY();
+//
+//        // TODO add new cells by touch here...
+//        Toast.makeText(context, x + ", " + y, Toast.LENGTH_SHORT).show();
+//
+//        return true;
+//    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        float x = event.getX();
-        float y = event.getY();
+        //mGestureDetector.onTouchEvent(event);
 
-        // TODO add new cells by touch here...
+        if (addingCells)
+        {
+            int touchX = (int) event.getX();
+            int touchY = (int) event.getY();
+
+            int cellWidth = this.getWidth() / HORIZONTAL_CELLS;
+            int cellHeight = this.getHeight() / VERTICAL_CELLS;
+
+            int cellX = touchX / cellWidth;
+            int cellY = touchY / cellHeight;
+
+            cells[cellX][cellY].alive = true;
+            invalidate();
+        }
 
         return true;
+        //return super.onTouchEvent(event);
     }
+
+
 }
