@@ -1,20 +1,30 @@
 package com.nscc.gameoflife.jareds_machine;
 
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
@@ -36,6 +46,11 @@ public class MainActivity extends AppCompatActivity {
     // for thread
     private Handler h;
     private final int FRAME_RATE = 100;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,16 +75,24 @@ public class MainActivity extends AppCompatActivity {
         //newSim();
         clearCanvas();
 
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     private Runnable r = new Runnable() {
         @Override
         public void run() {
             // run generation logic
-            for (int row = 0;row < board.cells.length;row++) {
-                for (int col = 0;col < board.cells.length;col++)
-                {
+            for (int row = 0; row < board.cells.length; row++) {
+                for (int col = 0; col < board.cells.length; col++) {
                     board.cells[row][col].lifeCheck(board.cells, row, col);
+                }
+            }
+
+            for (int row = 0; row < board.cells.length; row++) {
+                for (int col = 0; col < board.cells.length; col++) {
+                    board.cells[row][col].updateAlive();
                 }
             }
 
@@ -85,7 +108,6 @@ public class MainActivity extends AppCompatActivity {
                 h.postDelayed(r, FRAME_RATE);
         }
     };
-
 
 
     private void updateReport() {
@@ -155,8 +177,7 @@ public class MainActivity extends AppCompatActivity {
         setStartPositions();
     }
 
-    public void setStartPositions()
-    {
+    public void setStartPositions() {
         // TODO File I/O
         // stubbed for now
         for (int i = 0; i < 30; i++) {
@@ -168,14 +189,71 @@ public class MainActivity extends AppCompatActivity {
         board.clearCanvas();
     }
 
+    private void loadFile(String file) {
+        try {
+            InputStream inStream = getResources().openRawResource(getResources().getIdentifier(file.toLowerCase(), "raw", getPackageName()));
+            BufferedReader br = new BufferedReader(new InputStreamReader(inStream));
+            String line;
+            String[] coords;
+            int posx, posy;
+            while ((line = br.readLine()) != null) {
+                coords = line.split(":");
+                posx = Integer.parseInt(coords[0]);
+                posy = Integer.parseInt(coords[1]);
+                //TODO: make cell at posx,posy alive.
+                board.cells[posx][posy].alive = true;
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.d("File", "File not Found");
+        }
+    }
+
 
     private void connectWidgets() {
         board = (Board) findViewById(R.id.signature_canvas);
-        runPauseButton = (Button)findViewById(R.id.btnRun);
-        clearButton = (Button)findViewById(R.id.btnClear);
-        patternSpinner = (Spinner)findViewById(R.id.spinnerSetup);
-        generationInput = (EditText)findViewById(R.id.etGenerations);
-        generationReport = (TextView)findViewById(R.id.tvGenCount);
+        runPauseButton = (Button) findViewById(R.id.btnRun);
+        clearButton = (Button) findViewById(R.id.btnClear);
+        patternSpinner = (Spinner) findViewById(R.id.spinnerSetup);
+        generationInput = (EditText) findViewById(R.id.etGenerations);
+        generationReport = (TextView) findViewById(R.id.tvGenCount);
+
+        // initialize the pattern spinner
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.spn_template, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        patternSpinner.setAdapter(adapter);
+
+        patternSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String template = "";
+                if (position != 0) { // this is the prompt to choose a file
+                    // stop the sim and clear the board
+                    if (isRunning) {
+                        stopSim();
+                    }
+                    generations = 0;
+                    generationInput.setText("100");
+                    updateReport();
+                    newSim();
+                    clearCanvas();
+
+                    String temp[] = parent.getItemAtPosition(position).toString().split(" ");
+                    for (int idx = 0; idx < temp.length; idx++) {
+                        template += temp[idx];
+                    }
+                    loadFile(template);
+                } else {
+                    //hasFile = false;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
     }
 
     private void connectListeners() {
@@ -268,15 +346,43 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public void onStart() {
+        super.onStart();
 
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Main Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.nscc.gameoflife.jareds_machine/http/host/path")
+        );
+        AppIndex.AppIndexApi.start(client, viewAction);
+    }
 
+    @Override
+    public void onStop() {
+        super.onStop();
 
-
-
-
-
-
-
-
-
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Main Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.nscc.gameoflife.jareds_machine/http/host/path")
+        );
+        AppIndex.AppIndexApi.end(client, viewAction);
+        client.disconnect();
+    }
 }

@@ -77,7 +77,7 @@ public class Board extends View {
             for (int row = 0;row < cells.length;row++) {
                 for (int col = 0;col < cells.length;col++)
                 {
-                    cells[row][col].draw(canvas, mPaint);
+                    cells[row][col].draw(canvas, mPaint, color);
                 }
             }
         }
@@ -169,7 +169,12 @@ public class Board extends View {
             int cellX = touchX / cellWidth;
             int cellY = touchY / cellHeight;
 
-            cells[cellX][cellY].alive = true;
+            if (cellX < HORIZONTAL_CELLS && cellY < VERTICAL_CELLS) {
+                if (!cells[cellX][cellY].sentinel) {
+                    cells[cellX][cellY].alive = true;
+                }
+            }
+
             invalidate();
         }
 

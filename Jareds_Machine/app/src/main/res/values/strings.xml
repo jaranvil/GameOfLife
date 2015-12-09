@@ -9,4 +9,9 @@
     <string name="run_for">Run for:</string>
     <string name="generations">Generations</string>
     <string name="generation_count">Generation 123</string>
+
+    <string-array name="spn_template">
+        <item>Choose a template</item>
+        <item>Glider Gun</item>
+    </string-array>
 </resources>

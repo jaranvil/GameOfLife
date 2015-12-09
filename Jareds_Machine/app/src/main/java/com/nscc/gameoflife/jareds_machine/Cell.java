@@ -12,6 +12,7 @@ public class Cell {
     protected int x;//x coordinate in cellGrid
     protected int y;//y coordinate in cellGrid
     protected boolean alive;//true for alive, false for dead
+    protected boolean markedAlive;
     protected boolean sentinel;
     protected int age = 0;
 
@@ -26,17 +27,40 @@ public class Cell {
 
     public void lifeCheck(Cell[][] cellGrid, int myX, int myY)
     {
-//        Random r = new Random();
-//        int num = r.nextInt(2);
-//
-//        if (num == 1) {
-//            alive = true;
-//            age++;
+
+        // Ryans
+//        int liveCount = 0;
+//        //checks of surrounding cells, incrementing a count of living
+//        for(int x = -1;x<=1;x++)
+//        {
+//            for(int y = -1;y<=1;y++)
+//            {
+//                if(cellGrid[myX+x][myY+y].sentinel) {
+//                    alive = true;
+//                    return;
+//                }
+//                if (cellGrid[myX+x][myY+y].alive)
+//                    liveCount++;
+//            }
 //        }
-//        else {
-//            alive = false;
-//            age = 0;
+//        //check case on count
+//        if(this.alive)
+//        {
+//            liveCount--;
 //        }
+//        switch (liveCount)
+//        {
+//            case 2:
+//                if (this.alive)
+//                    alive = true;
+//                    break;
+//            case 3:
+//                alive = true;
+//                break;
+//            default:
+//                alive = false;
+//        }
+
 
         // myX and myY is the position of this cell in the board's 2d array
         // the below positions are the top left cell in the 3x3 area around this cell
@@ -58,13 +82,18 @@ public class Cell {
             }
 
             if (alive) {
+                // dont count yourself
+                liveCount--;
+
                 if (liveCount == 2 || liveCount == 3)
-                    alive = true;
+                    markedAlive = true;
                 else
-                    alive = false;
+                    markedAlive = false;
             } else {
                 if (liveCount == 3)
-                    alive = true;
+                    markedAlive = true;
+                else
+                    markedAlive = false;
             }
         }
 
@@ -77,9 +106,20 @@ public class Cell {
 
     }
 
-    void draw(Canvas c,Paint p)
+    public void updateAlive()
+    {
+        if (!sentinel)
+            alive = markedAlive;
+    }
+
+    void draw(Canvas c,Paint p, int color)
     {
         if (alive) {
+
+            if (sentinel)
+                p.setColor(Color.BLACK);
+            else
+                p.setColor(color);
 
             // fill rect
             p.setStyle(Paint.Style.FILL);
